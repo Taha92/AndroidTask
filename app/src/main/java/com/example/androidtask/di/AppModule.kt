@@ -2,7 +2,8 @@ package com.example.androidtask.di
 
 import android.content.Context
 import androidx.room.Room
-import com.example.androidtask.data.TaskDatabase
+import com.example.androidtask.Room.TaskDatabase
+import com.example.androidtask.Room.TaskDatabaseDao
 import com.example.androidtask.network.TaskApi
 import com.example.androidtask.util.Constants
 import dagger.Module
@@ -26,6 +27,11 @@ object AppModule {
             .build()
             .create(TaskApi::class.java)
     }
+
+    @Singleton
+    @Provides
+    fun provideNotesDao(taskDatabase: TaskDatabase): TaskDatabaseDao
+            = taskDatabase.taskDao()
 
     @Singleton
     @Provides

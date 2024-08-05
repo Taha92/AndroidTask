@@ -7,8 +7,10 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.toMutableStateList
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.androidtask.model.AuthTokenProvider
 import com.example.androidtask.model.Task
 import com.example.androidtask.model.TaskEntity
+import com.example.androidtask.repository.AuthRepository
 import com.example.androidtask.repository.TaskRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
@@ -21,14 +23,27 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class MainViewModel @Inject constructor(private val repository: TaskRepository) : ViewModel() {
+class MainViewModel @Inject constructor(
+    private val repository: TaskRepository,
+    private val authRepository: AuthRepository,
+    private val authTokenProvider: AuthTokenProvider
+) : ViewModel() {
 
     private val _taskList = MutableStateFlow<List<TaskEntity>>(emptyList())
     val taskList = _taskList.asStateFlow()
 
     init {
         viewModelScope.launch {
+            getAccessToken()
             fetchTask()
+        }
+    }
+
+    suspend fun getAccessToken() {
+        viewModelScope.launch(Dispatchers.IO) {
+            val token = authRepository.getAccessToken("365", "1")
+            authTokenProvider.setToken(token)
+            Log.d("TAG", "getAccessToken: ${token}")
         }
     }
 
@@ -106,3 +121,4 @@ class MainViewModel @Inject constructor(private val repository: TaskRepository
         }
     }
 }*/
+

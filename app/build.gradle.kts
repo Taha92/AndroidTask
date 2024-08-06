@@ -101,4 +101,8 @@ dependencies {
 
     // SwipeRefresh
     implementation("com.google.accompanist:accompanist-swiperefresh:0.25.1")
+
+    // ZXing for QR code scanning
+    implementation("com.journeyapps:zxing-android-embedded:4.3.0")
+    implementation("com.google.zxing:core:3.3.3")
 }

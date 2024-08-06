@@ -13,10 +13,16 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Divider
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -43,6 +49,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
 import com.example.androidtask.model.TaskEntity
+import com.example.androidtask.navigation.TaskAppScreens
 import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.SwipeRefreshIndicator
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
@@ -55,16 +62,26 @@ fun HomeScreen(navController: NavController, viewModel: MainViewModel) {
     val taskList = viewModel.taskList.collectAsState().value
     val loading = viewModel.loading.collectAsState().value
     val context = LocalContext.current
+    var showMenu by remember { mutableStateOf(false) }
 
     Scaffold(topBar = {
         TopAppBar(
             title = { Text("Tasks") },
             actions = {
-                IconButton(onClick = {
-                    //val intent = Intent(context, QRCodeScannerActivity::class.java)
-                    //(context as Activity).startActivityForResult(intent, REQUEST_CODE_QR_SCAN)
-                }) {
-                    //Icon(Icons.Default.QrCodeScanner, contentDescription = "QR Code Scanner")
+                IconButton(onClick = { showMenu = !showMenu }) {
+                    Icon(
+                        imageVector = Icons.Default.MoreVert,
+                        contentDescription = "More icon"
+                    )
+                }
+                DropdownMenu(
+                    expanded = showMenu,
+                    onDismissRequest = { showMenu = false }
+                ) {
+                    DropdownMenuItem(
+                        text = { Text(text = "Scan") },
+                        trailingIcon = {Icons.Default.Refresh},
+                        onClick = { navController.navigate(TaskAppScreens.QRCodeScannerScreen.name) })
                 }
             }
         )

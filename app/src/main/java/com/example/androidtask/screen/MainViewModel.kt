@@ -1,11 +1,16 @@
 package com.example.androidtask.screen
 
 import android.util.Log
+import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.toMutableStateList
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.asFlow
 import androidx.lifecycle.viewModelScope
 import com.example.androidtask.model.AuthTokenProvider
 import com.example.androidtask.model.Task
@@ -14,6 +19,7 @@ import com.example.androidtask.repository.AuthRepository
 import com.example.androidtask.repository.TaskRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -32,6 +38,12 @@ class MainViewModel @Inject constructor(
     private val _taskList = MutableStateFlow<List<TaskEntity>>(emptyList())
     val taskList = _taskList.asStateFlow()
 
+    /*private val _loading = MutableLiveData(false)
+    var loading: Flow<Boolean> = _loading.asFlow()*/
+    private val _loading = MutableStateFlow(false)
+    var loading = MutableStateFlow(false)
+
+
     init {
         viewModelScope.launch {
             getAccessToken()
@@ -49,14 +61,14 @@ class MainViewModel @Inject constructor(
 
     suspend fun fetchTask() {
         viewModelScope.launch(Dispatchers.IO) {
+            loading.value = true
             val taskEntities = repository.fetchTasks()
-            /*_taskList
-            taskList.addAll(taskEntities)*/
             repository.getAllTasks().distinctUntilChanged()
                 .collect { listOfTasks ->
                     if (listOfTasks.isNullOrEmpty()) {
                         Log.d("Empty", ": Empty list")
                     }else {
+                        loading.value = false
                         _taskList.value = listOfTasks
                     }
 

@@ -4,5 +4,7 @@ data class Task(
     val task: String,
     val title: String,
     val description: String,
-    val colorCode: String
+    val colorCode: String,
+    val wageType: String,
+    val businessUnit: String,
 )

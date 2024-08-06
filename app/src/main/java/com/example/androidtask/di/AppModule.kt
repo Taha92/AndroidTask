@@ -2,8 +2,8 @@ package com.example.androidtask.di
 
 import android.content.Context
 import androidx.room.Room
-import com.example.androidtask.Room.TaskDatabase
-import com.example.androidtask.Room.TaskDatabaseDao
+import com.example.androidtask.room.TaskDatabase
+import com.example.androidtask.room.TaskDatabaseDao
 import com.example.androidtask.connection.HeaderInterceptor
 import com.example.androidtask.model.AuthTokenProvider
 import com.example.androidtask.network.TaskApi

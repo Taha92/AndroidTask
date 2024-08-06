@@ -8,6 +8,8 @@ import androidx.navigation.compose.rememberNavController
 import com.example.androidtask.screen.HomeScreen
 import com.example.androidtask.screen.MainViewModel
 import com.example.androidtask.screen.QRCodeScannerScreen
+import com.example.androidtask.screen.SearchScreen
+import com.example.androidtask.screen.SearchViewModel
 
 @Composable
 fun TaskAppNavigation() {
@@ -23,6 +25,11 @@ fun TaskAppNavigation() {
 
         composable(TaskAppScreens.QRCodeScannerScreen.name) {
             QRCodeScannerScreen(navController = navController) {}
+        }
+
+        composable(TaskAppScreens.SearchScreen.name) {
+            val searchViewModel = hiltViewModel<SearchViewModel>()
+            SearchScreen(navController = navController, searchViewModel)
         }
 
     }

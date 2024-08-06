@@ -1,5 +1,6 @@
 package com.example.androidtask.screen
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
@@ -14,8 +15,10 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Divider
@@ -42,12 +45,13 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onGloballyPositioned
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
+import com.example.androidtask.R
 import com.example.androidtask.model.TaskEntity
 import com.example.androidtask.navigation.TaskAppScreens
 import com.google.accompanist.swiperefresh.SwipeRefresh
@@ -61,7 +65,6 @@ import kotlinx.coroutines.launch
 fun HomeScreen(navController: NavController, viewModel: MainViewModel) {
     val taskList = viewModel.taskList.collectAsState().value
     val loading = viewModel.loading.collectAsState().value
-    val context = LocalContext.current
     var showMenu by remember { mutableStateOf(false) }
 
     Scaffold(topBar = {
@@ -80,8 +83,13 @@ fun HomeScreen(navController: NavController, viewModel: MainViewModel) {
                 ) {
                     DropdownMenuItem(
                         text = { Text(text = "Scan") },
-                        trailingIcon = {Icons.Default.Refresh},
+                        leadingIcon = { Icon(painter = painterResource(id = R.drawable.ic_qr_code), contentDescription = "QR code icon") },
                         onClick = { navController.navigate(TaskAppScreens.QRCodeScannerScreen.name) })
+
+                    DropdownMenuItem(
+                        text = { Text(text = "Search") },
+                        leadingIcon = { Icon(imageVector = Icons.Default.Search, contentDescription = "Search icon") },
+                        onClick = { navController.navigate(TaskAppScreens.SearchScreen.name) })
                 }
             }
         )
@@ -90,6 +98,7 @@ fun HomeScreen(navController: NavController, viewModel: MainViewModel) {
             .fillMaxSize()
             .padding(top = it.calculateTopPadding(), start = 3.dp, end = 3.dp, bottom = 3.dp)
         ) {
+
             /*if(loading) {
                 Column(modifier = Modifier
                     .fillMaxSize(),
@@ -116,7 +125,18 @@ fun HomeScreen(navController: NavController, viewModel: MainViewModel) {
                 }
             }
             else{
-                Content(taskList, viewModel)
+                Column {
+
+                    Content(taskList, viewModel)
+
+                    BackHandler {
+                        viewModel.viewModelScope.launch(Dispatchers.IO) {
+                            viewModel.fetchTask()
+                        }
+                    }
+
+                }
+
             }
         }
     }

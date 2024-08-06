@@ -25,6 +25,7 @@ import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -78,17 +79,17 @@ class MainViewModel @Inject constructor(
 
     fun searchTasks(query: String) {
         viewModelScope.launch {
-            /*_taskList.collectAsState().value
-            _tasks.addAll(repository.searchTasks(query))*/
-
-            repository.searchTasks(query).distinctUntilChanged()
+            repository.searchTasks(query)
+                .map { listOfTasks ->
+                    listOfTasks.distinctBy { it.task + it.title + it.description + it.colorCode }
+                } // Ensure distinct tasks by concatenating task properties
+                .distinctUntilChanged() // Emit only when the list changes
                 .collect { listOfTasks ->
                     if (listOfTasks.isNullOrEmpty()) {
                         Log.d("Empty", ": Empty list")
-                    }else {
+                    } else {
                         _taskList.value = listOfTasks
                     }
-
                 }
         }
     }

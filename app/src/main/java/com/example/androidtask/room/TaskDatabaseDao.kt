@@ -1,11 +1,10 @@
-package com.example.androidtask.Room
+package com.example.androidtask.room
 
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import com.example.androidtask.model.TaskEntity
-import dagger.Provides
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -16,6 +15,6 @@ interface TaskDatabaseDao {
     @Query("SELECT * FROM tasks")
     fun getAllTasks(): Flow<List<TaskEntity>>
 
-    @Query("SELECT * FROM tasks WHERE task LIKE :query OR task_title LIKE :query OR task_description LIKE :query")
+    @Query("SELECT * FROM tasks WHERE task LIKE :query OR task_title LIKE :query OR task_description LIKE :query OR task_color_code LIKE :query OR wage_type LIKE :query OR business_unit LIKE :query")
     fun searchTasks(query: String): Flow<List<TaskEntity>>
 }

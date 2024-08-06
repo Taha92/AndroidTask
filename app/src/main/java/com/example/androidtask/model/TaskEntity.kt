@@ -16,5 +16,11 @@ data class TaskEntity(
     val description: String,
 
     @ColumnInfo(name = "task_color_code")
-    val colorCode: String
+    val colorCode: String,
+
+    @ColumnInfo(name = "wage_type")
+    val wageType: String,
+
+    @ColumnInfo(name = "business_unit")
+    val businessUnit: String,
 )

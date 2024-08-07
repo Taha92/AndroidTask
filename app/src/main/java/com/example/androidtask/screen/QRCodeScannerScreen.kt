@@ -41,6 +41,7 @@ fun QRCodeScannerScreen(
     val context = LocalContext.current
     var hasCameraPermission by remember { mutableStateOf(false) }
     val decoratedBarcodeView = remember { DecoratedBarcodeView(context) }
+    var isScanning by remember { mutableStateOf(true) }
 
     val cameraPermissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission(),
@@ -100,22 +101,27 @@ fun QRCodeScannerScreen(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 if (hasCameraPermission) {
-                    AndroidView(
-                        factory = { decoratedBarcodeView },
-                        modifier = Modifier.fillMaxSize(),
-                    ) { view ->
-                        view.decodeContinuous(object : BarcodeCallback {
-                            override fun barcodeResult(result: BarcodeResult?) {
-                                result?.let {
-                                    Log.d("QRCodeScannerScreen", "Barcode result: ${it.text}")
-                                    onResult(it.text)
+                    if (isScanning) {
+                        AndroidView(
+                            factory = { decoratedBarcodeView },
+                            modifier = Modifier.fillMaxSize(),
+                        ) { view ->
+                            view.decodeContinuous(object : BarcodeCallback {
+                                override fun barcodeResult(result: BarcodeResult?) {
+                                    result?.let {
+                                        Log.d("QRCodeScannerScreen", "Barcode result: ${it.text}")
+                                        onResult(it.text)
+                                        isScanning = false
+                                        //view.pause()
+                                    }
                                 }
-                            }
 
-                            override fun possibleResultPoints(resultPoints: MutableList<ResultPoint>?) {}
-                        })
-                        view.resume() // Ensure the camera preview is resumed
+                                override fun possibleResultPoints(resultPoints: MutableList<ResultPoint>?) {}
+                            })
+                            view.resume() // Ensure the camera preview is resumed
+                        }
                     }
+
                 } else {
                     Button(onClick = { cameraPermissionLauncher.launch(Manifest.permission.CAMERA) }) {
                         Text("Grant Camera Permission")

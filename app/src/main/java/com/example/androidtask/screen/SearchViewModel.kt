@@ -21,8 +21,6 @@ class SearchViewModel @Inject constructor(
     private val _taskList = MutableStateFlow<List<TaskEntity>>(emptyList())
     val taskList = _taskList.asStateFlow()
 
-    /*private val _loading = MutableLiveData(false)
-    var loading: Flow<Boolean> = _loading.asFlow()*/
     private val _loading = MutableStateFlow(false)
     var loading = MutableStateFlow(false)
 
@@ -38,7 +36,7 @@ class SearchViewModel @Inject constructor(
                 repository.searchTasks(query)
                     .map { listOfTasks ->
                         listOfTasks.distinctBy { it.task + it.title + it.description + it.colorCode + it.wageType + it.businessUnit }
-                    } // Ensure distinct tasks by concatenating task properties
+                    }
                     .distinctUntilChanged() // Emit only when the list changes
                     .collect { listOfTasks ->
                         if (listOfTasks.isNullOrEmpty()) {
@@ -50,4 +48,7 @@ class SearchViewModel @Inject constructor(
             }
         }
     }
-}
+
+    fun clearTasks() {
+        _taskList.value = emptyList()
+    }}

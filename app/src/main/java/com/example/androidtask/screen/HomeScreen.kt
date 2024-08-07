@@ -123,8 +123,7 @@ fun HomeScreen(navController: NavController, viewModel: MainViewModel) {
                     ){}
 
                 }
-            }
-            else{
+            } else{
                 Column {
 
                     Content(taskList, viewModel)

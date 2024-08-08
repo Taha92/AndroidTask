@@ -8,6 +8,7 @@ import com.example.androidtask.connection.HeaderInterceptor
 import com.example.androidtask.model.AuthTokenProvider
 import com.example.androidtask.network.TaskApi
 import com.example.androidtask.repository.AuthRepository
+import com.example.androidtask.repository.TaskRepository
 import com.example.androidtask.util.Constants
 import dagger.Module
 import dagger.Provides
@@ -74,6 +75,12 @@ object AppModule {
     @Singleton
     fun provideAuthRepository(authService: TaskApi): AuthRepository {
         return AuthRepository(authService)
+    }
+
+    @Provides
+    @Singleton
+    fun provideTaskRepository(taskApi: TaskApi, taskDatabaseDao: TaskDatabaseDao): TaskRepository {
+        return TaskRepository(taskApi, taskDatabaseDao)
     }
 
     @Provides

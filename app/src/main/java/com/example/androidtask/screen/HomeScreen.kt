@@ -1,5 +1,7 @@
 package com.example.androidtask.screen
 
+import android.content.Context
+import android.util.Log
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
@@ -15,9 +17,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.MoreVert
-import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -45,26 +45,36 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
+import androidx.work.ExistingPeriodicWorkPolicy
+import androidx.work.PeriodicWorkRequestBuilder
+import androidx.work.WorkInfo
+import androidx.work.WorkManager
 import com.example.androidtask.R
 import com.example.androidtask.model.TaskEntity
 import com.example.androidtask.navigation.TaskAppScreens
+import com.example.androidtask.worker.RefreshDataWorker
 import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.SwipeRefreshIndicator
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import java.util.concurrent.TimeUnit
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(navController: NavController, viewModel: MainViewModel) {
     val taskList = viewModel.taskList.collectAsState().value
     val loading = viewModel.loading.collectAsState().value
+    val context = LocalContext.current
     var showMenu by remember { mutableStateOf(false) }
 
     Scaffold(topBar = {
@@ -114,11 +124,12 @@ fun HomeScreen(navController: NavController, viewModel: MainViewModel) {
             if(loading){
                 Column (modifier = Modifier){
 
-                    Card(modifier = Modifier
-                        .fillMaxWidth(1f)
-                        .height(60.dp)
-                        .shimmerEffect()
-                        .clip(RoundedCornerShape(5.dp)),
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth(1f)
+                            .height(60.dp)
+                            .shimmerEffect()
+                            .clip(RoundedCornerShape(5.dp)),
                         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
                     ){}
 
@@ -127,6 +138,7 @@ fun HomeScreen(navController: NavController, viewModel: MainViewModel) {
                 Column {
 
                     Content(taskList, viewModel)
+                    setupPeriodicWork(context, viewModel)
 
                     BackHandler {
                         viewModel.viewModelScope.launch(Dispatchers.IO) {
@@ -236,5 +248,51 @@ fun Modifier.shimmerEffect(): Modifier = composed {
         )
     ).onGloballyPositioned {
         size = it.size
+    }
+}
+
+fun setupPeriodicWork(context: Context, viewModel: MainViewModel) {
+    val workRequest = PeriodicWorkRequestBuilder<RefreshDataWorker>(
+        60,
+        TimeUnit.MINUTES)
+        .build()
+
+    val workManager = WorkManager.getInstance(context)
+
+    workManager
+        .enqueueUniquePeriodicWork(
+            "RefreshWorker",
+            ExistingPeriodicWorkPolicy.KEEP,
+            workRequest
+        )
+
+    // Observe the WorkInfo
+    workManager.getWorkInfoByIdLiveData(workRequest.id).observeForever { workInfo ->
+        if (workInfo != null) {
+            when (workInfo.state) {
+                WorkInfo.State.SUCCEEDED -> {
+                    // Worker succeeded
+                    Log.d("TAG", "setupPeriodicWork: Success")
+                    viewModel.viewModelScope.launch {
+                        viewModel.fetchTask() // Refresh the UI with the latest data
+                    }
+                }
+                WorkInfo.State.FAILED -> {
+                    // Worker failed
+                    Log.d("TAG", "setupPeriodicWork: Failed")
+                }
+                WorkInfo.State.RUNNING -> {
+                    // Worker is currently running
+                    Log.d("TAG", "setupPeriodicWork: Running")
+                }
+                WorkInfo.State.ENQUEUED -> {
+                    // Worker is currently running
+                }
+                else -> {
+                    // Handle other states if necessary (e.g., ENQUEUED, BLOCKED, CANCELLED)
+                    Log.d("TAG", "setupPeriodicWork: Else")
+                }
+            }
+        }
     }
 }

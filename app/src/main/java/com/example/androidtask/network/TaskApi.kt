@@ -1,7 +1,6 @@
 package com.example.androidtask.network
 
 import com.example.androidtask.model.Task
-import com.example.androidtask.model.TokenResponse
 import com.example.androidtask.model.login.LoginResponse
 import okhttp3.RequestBody
 import retrofit2.http.Body

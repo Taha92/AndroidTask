@@ -1,7 +1,6 @@
 package com.example.androidtask.model
 
 import javax.inject.Inject
-import javax.inject.Singleton
 
 class AuthTokenProvider @Inject constructor() {
     private var token: String = ""

@@ -46,6 +46,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
@@ -117,7 +118,8 @@ fun SearchScreen(navController: NavController, viewModel: SearchViewModel) {
                 SearchForm(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(16.dp),
+                        .padding(16.dp)
+                        .alpha(if (showScanner) 0f else 1f),
                     searchQuery = query,
                 ) { searchQuery ->
                     showScanner = false
@@ -139,7 +141,6 @@ fun SearchScreen(navController: NavController, viewModel: SearchViewModel) {
                 }
             }
         }
-        Log.d("TAG", "SearchScreen: ")
     }
 }
 
@@ -232,11 +233,21 @@ fun StartScanning(onResult: (String) -> Unit) {
 fun TaskList(viewModel: SearchViewModel) {
     val taskList = viewModel.taskList.collectAsState().value
 
-    LazyColumn {
-        items(taskList) { task ->
-            TaskItem(task)
+    if(taskList.isEmpty()) {
+        Column(modifier = Modifier
+            .fillMaxSize(),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(text = "No task...")
+        }
+    } else {
+        LazyColumn {
+            items(taskList) { task ->
+                TaskItem(task)
 
-            Divider(modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 4.dp, bottom = 4.dp))
+                Divider(modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 4.dp, bottom = 4.dp))
+            }
         }
     }
 }
@@ -248,7 +259,7 @@ fun SearchForm(
     searchQuery: String,
     onSearch: (String) -> Unit = {},
 ) {
-    Column {
+    Column(modifier) {
         val searchQueryState = rememberSaveable { mutableStateOf("") }
         val keyboardController = LocalSoftwareKeyboardController.current
         val valid = remember(searchQueryState.value) { searchQueryState.value.trim().isNotEmpty() }

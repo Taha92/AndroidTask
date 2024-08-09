@@ -50,7 +50,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.LiveData
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
 import androidx.work.ExistingPeriodicWorkPolicy
@@ -91,11 +90,11 @@ fun HomeScreen(navController: NavController, viewModel: MainViewModel) {
                     expanded = showMenu,
                     onDismissRequest = { showMenu = false }
                 ) {
-                    DropdownMenuItem(
+                    /*DropdownMenuItem(
                         text = { Text(text = "Scan") },
                         leadingIcon = { Icon(painter = painterResource(id = R.drawable.ic_qr_code), contentDescription = "QR code icon") },
                         onClick = { navController.navigate(TaskAppScreens.QRCodeScannerScreen.name) })
-
+*/
                     DropdownMenuItem(
                         text = { Text(text = "Search") },
                         leadingIcon = { Icon(imageVector = Icons.Default.Search, contentDescription = "Search icon") },
@@ -109,29 +108,23 @@ fun HomeScreen(navController: NavController, viewModel: MainViewModel) {
             .padding(top = it.calculateTopPadding(), start = 3.dp, end = 3.dp, bottom = 3.dp)
         ) {
 
-            /*if(loading) {
-                Column(modifier = Modifier
-                    .fillMaxSize(),
-                    verticalArrangement = Arrangement.Center,
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    CircularProgressIndicator()
-                    Text(text = "Loading...")
-                }
-            } else {
-                Content(taskList, viewModel)
-            }*/
             if(loading){
-                Column (modifier = Modifier){
+                Column (modifier = Modifier.padding(15.dp)){
 
-                    Card(
-                        modifier = Modifier
-                            .fillMaxWidth(1f)
-                            .height(60.dp)
-                            .shimmerEffect()
-                            .clip(RoundedCornerShape(5.dp)),
-                        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
-                    ){}
+                    LazyColumn {
+                        items(50) {
+                            Card(
+                                modifier = Modifier
+                                    .fillMaxWidth(1f)
+                                    .height(90.dp)
+                                    .shimmerEffect()
+                                    .clip(RoundedCornerShape(5.dp)),
+                                elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+                            ){}
+
+                            Divider(modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 4.dp, bottom = 4.dp))
+                        }
+                    }
 
                 }
             } else{
@@ -145,9 +138,7 @@ fun HomeScreen(navController: NavController, viewModel: MainViewModel) {
                             viewModel.fetchTask()
                         }
                     }
-
                 }
-
             }
         }
     }
@@ -167,8 +158,8 @@ fun Content(taskList: List<TaskEntity>, viewModel: MainViewModel) {
         indicator = {
                 state, refresh ->
             SwipeRefreshIndicator(state = state,
-                refreshTriggerDistance = refresh, backgroundColor = Color(0xFF63358B),
-                contentColor = Color.White)
+                refreshTriggerDistance = refresh, backgroundColor = Color.White,
+                contentColor = Color.Gray)
         }) {
         LazyColumn {
             items(taskList) { task ->
@@ -236,10 +227,11 @@ fun Modifier.shimmerEffect(): Modifier = composed {
         mutableStateOf(IntSize.Zero)
     }
 
-    val transition = rememberInfiniteTransition()
+    val transition = rememberInfiniteTransition(label = "")
     val startOffsetX by transition.animateFloat(initialValue = -2 * size.width.toFloat(), targetValue = 2 * size.width.toFloat(), animationSpec = infiniteRepeatable(
         tween(durationMillis = 1000)
-    )
+    ),
+        label = ""
     )
 
     background(
@@ -249,6 +241,8 @@ fun Modifier.shimmerEffect(): Modifier = composed {
     ).onGloballyPositioned {
         size = it.size
     }
+
+    clip(RoundedCornerShape(5.dp))
 }
 
 fun setupPeriodicWork(context: Context, viewModel: MainViewModel) {

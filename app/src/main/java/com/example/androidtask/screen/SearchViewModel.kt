@@ -41,6 +41,7 @@ class SearchViewModel @Inject constructor(
                     .collect { listOfTasks ->
                         if (listOfTasks.isNullOrEmpty()) {
                             Log.d("Empty", ": Empty list")
+                            _taskList.value = listOfTasks
                         } else {
                             _taskList.value = listOfTasks
                         }

@@ -88,4 +88,8 @@ object AppModule {
     fun provideAuthInterceptor(authTokenProvider: AuthTokenProvider): HeaderInterceptor {
         return HeaderInterceptor(authTokenProvider)
     }
+
+    @Provides
+    @Singleton
+    fun provideContext(application: android.app.Application): Context = application.applicationContext
 }

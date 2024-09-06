@@ -1,6 +1,8 @@
 package com.example.androidtask.screen
 
 import android.content.Context
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
 import android.util.Log
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.core.animateFloat
@@ -130,12 +132,12 @@ fun HomeScreen(navController: NavController, viewModel: MainViewModel) {
             } else{
                 Column {
 
-                    Content(taskList, viewModel)
+                    Content(taskList, viewModel, context)
                     setupPeriodicWork(context, viewModel)
 
                     BackHandler {
                         viewModel.viewModelScope.launch(Dispatchers.IO) {
-                            viewModel.fetchTask()
+                            viewModel.fetchTask(context)
                         }
                     }
                 }
@@ -145,14 +147,14 @@ fun HomeScreen(navController: NavController, viewModel: MainViewModel) {
 }
 
 @Composable
-fun Content(taskList: List<TaskEntity>, viewModel: MainViewModel) {
+fun Content(taskList: List<TaskEntity>, viewModel: MainViewModel, context: Context) {
 
     val swipeRefreshState = rememberSwipeRefreshState(isRefreshing = false)
 
     SwipeRefresh(state = swipeRefreshState,
         onRefresh = {
             viewModel.viewModelScope.launch(Dispatchers.IO) {
-                viewModel.fetchTask()
+                viewModel.fetchTask(context)
             }
         },
         indicator = {
@@ -268,7 +270,7 @@ fun setupPeriodicWork(context: Context, viewModel: MainViewModel) {
                     // Worker succeeded
                     Log.d("TAG", "setupPeriodicWork: Success")
                     viewModel.viewModelScope.launch {
-                        viewModel.fetchTask() // Refresh the UI with the latest data
+                        viewModel.fetchTask(context) // Refresh the UI with the latest data
                     }
                 }
                 WorkInfo.State.FAILED -> {
